@@ -1,0 +1,3 @@
+Tamaño de imagenes para cards : 1024 x 683
+
+Tamaño de imagnes para carrusel : 
