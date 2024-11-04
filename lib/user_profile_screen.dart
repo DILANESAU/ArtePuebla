@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
 
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
@@ -7,14 +7,14 @@ class UserProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Perfil de Usuario"),
+        title: const Text("Perfil de Usuario"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Imagen de usuario
-            CircleAvatar(
+            const CircleAvatar(
               radius: 80,
               backgroundImage: AssetImage('assets/images/user_profile.jpg'), 
             ),
@@ -47,7 +47,7 @@ class UserProfileScreen extends StatelessWidget {
       child: TextField(
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             color: Colors.purple,
           ),
           filled: true,

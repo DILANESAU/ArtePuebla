@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Home.dart';
+import 'package:artepuebla/Home.dart';
+import 'package:artepuebla/ViewModel/LoginViewModel.dart';
+import 'package:artepuebla/ViewModel/RegisterViewModel.dart';
+import 'package:provider/provider.dart';
 import 'register_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:artepuebla/museum_screen.dart';
+import 'package:artepuebla/ViewModel/museumScreen.dart';
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LoginViewModel()),
+        ChangeNotifierProvider(create: (_) => RegisterViewModel()),
+        ChangeNotifierProvider(create: (_) => MuseumViewModel()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -18,6 +31,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/museumScreen': (context) => const MuseumScreen(),
       },
     );
   }
@@ -28,7 +43,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
+    final viewModel = Provider.of<LoginViewModel>(context, listen: false);
 
     return Scaffold(
       body: Container(
@@ -57,12 +73,12 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30.0),
               Form(
-                key: _formKey,
+                key: formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Nombre',
+                      'Email',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.0,
@@ -71,32 +87,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 5.0),
                       TextFormField(
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.2),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, ingrese su nombre';
-                        }
-                        return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Email',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.0,
-                          fontFamily: 'MyCustomFont',
-                        ),
-                      ),
-                      const SizedBox(height: 5.0),
-                      TextFormField(
+                        onChanged: (value) => viewModel.email = value,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.2),
@@ -108,25 +99,58 @@ class LoginScreen extends StatelessWidget {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor, ingrese su email';
-                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                            .hasMatch(value)) {
+                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                           return 'Por favor, ingrese un email válido';
                         }
+                        return null;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+                      const Text(
+                        'Contraseña',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.0,
+                          fontFamily: 'MyCustomFont',
+                        ),
+                      ),
+                      const SizedBox(height: 5.0),
+                      TextFormField(
+                        obscureText: true,
+                        onChanged: (value) => viewModel.password = value,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.2),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, ingrese su contraseña';
+                        } 
                         return null;
                       },
                     ),
                       const SizedBox(height: 30.0),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
                             //Logica del boton inicio de Sesion
-                            
-                            Navigator.push(
+                            final isLogged = await viewModel.loginUser();
+                            if(isLogged) {
+                              Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => HomeScreen()),
+                                  builder: (context) => const HomeScreen()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Email o contraseñas incorrectos")),
                               );
                             }
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[800],

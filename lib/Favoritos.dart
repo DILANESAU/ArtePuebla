@@ -13,7 +13,7 @@ class FavoritosScreen extends StatelessWidget {
       title: "Favoritos",
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Mis Favoritos"),
+          title: const Text("Mis Favoritos"),
         ),
         drawer: MenuLateral(),
         body: ListView(
@@ -21,8 +21,8 @@ class FavoritosScreen extends StatelessWidget {
           children: [
             // Encabezado
             Container(
-              margin: EdgeInsets.all(2.0),
-              padding: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(2.0),
+              padding: const EdgeInsets.all(10.0),
               height: 200,
               decoration: BoxDecoration(
                 image: const DecorationImage(
@@ -122,13 +122,13 @@ class FavoritosScreen extends StatelessWidget {
       String description, String price, String imageUrl) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       elevation: 15,
       child: Row(
         children: [
           Container(
-            margin: EdgeInsets.all(2.0),
-            padding: EdgeInsets.all(10.0),
+            margin: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(10.0),
             width: 100,
             height: 100,
             decoration: BoxDecoration(
@@ -166,6 +166,8 @@ class FavoritosScreen extends StatelessWidget {
 }
 
 class MenuLateral extends StatelessWidget {
+  const MenuLateral({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -198,7 +200,7 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => MuseumScreen()),
+                MaterialPageRoute(builder: (BuildContext) => const MuseumScreen()),
               );
             },
           ),

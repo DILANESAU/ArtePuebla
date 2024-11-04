@@ -2,36 +2,41 @@ import 'package:flutter/material.dart';
 import 'Favoritos.dart';
 import 'Home.dart';
 import 'Taller.dart';
-
+import 'ViewModel/museumScreen.dart';
+import 'package:provider/provider.dart';
 class MuseumScreen extends StatelessWidget {
   const MuseumScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<MuseumViewModel>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Arte Puebla",
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Museos"),
+          title: const Text("Museos"),
         ),
-        drawer: MenuLateral(),
-        body: Column(
+        drawer: const MenuLateral(),
+        body: viewModel.isLoading
+        ? const Center(child: CircularProgressIndicator(),) :
+         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Encabezado
             Container(
-              margin: EdgeInsets.all(2.0),
-              padding: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(2.0),
+              padding: const EdgeInsets.all(10.0),
               height: 200,
-              decoration: BoxDecoration(
+             /* decoration: BoxDecoration(
                 image: const DecorationImage(
                   image: NetworkImage(
                       'https://your-image-url.com/image.jpg'), // Cambia esto por tu URL de imagen
                   fit: BoxFit.cover,
                 ),
                 borderRadius: BorderRadius.circular(16.0),
-              ),
+              ), */
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -74,30 +79,12 @@ class MuseumScreen extends StatelessWidget {
             const SizedBox(height: 16),
             // Lista de museos
             Expanded(
-              child: ListView(
-                children: [
-                  _buildMuseumCard(
-                    context,
-                    'Museo de la Evolución',
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    '45.00',
-                    'https://your-image-url.com/museum1.jpg', // Cambia esto por tu URL de imagen
-                  ),
-                  _buildMuseumCard(
-                    context,
-                    'Museo Amparo',
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    '45.00',
-                    'https://your-image-url.com/museum2.jpg', // Cambia esto por tu URL de imagen
-                  ),
-                  _buildMuseumCard(
-                    context,
-                    'Museo del Ferrocarril',
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    '45.00',
-                    'https://your-image-url.com/museum3.jpg', // Cambia esto por tu URL de imagen
-                  ),
-                ],
+              child: ListView.builder(
+                itemCount: viewModel.events.length,
+                itemBuilder: (context, index) {
+                  final event = viewModel.events[index];
+                  return _buildMuseumCard(context, event.nameEvent, event.description, event.cost.toString());
+                },
               ),
             ),
           ],
@@ -125,23 +112,23 @@ class MuseumScreen extends StatelessWidget {
   }
 
   Widget _buildMuseumCard(BuildContext context, String title,
-      String description, String price, String imageUrl) {
+      String description, String price) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         children: [
           Container(
-            margin: EdgeInsets.all(2.0),
-            padding: EdgeInsets.all(10.0),
+            margin: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(10.0),
             width: 100,
             height: 100,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.0),
-              image: DecorationImage(
+              /*image: DecorationImage(
                 image:
                     NetworkImage(imageUrl), // Cambia esto por tu URL de imagen
                 fit: BoxFit.cover,
-              ),
+              ), */
             ),
           ),
           const SizedBox(width: 16),
@@ -170,6 +157,8 @@ class MuseumScreen extends StatelessWidget {
 }
 
 class MenuLateral extends StatelessWidget {
+  const MenuLateral({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -202,7 +191,7 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => MuseumScreen()),
+                MaterialPageRoute(builder: (BuildContext) => const MuseumScreen()),
               );
             },
           ),

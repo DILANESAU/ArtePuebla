@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/museum_screen.dart';
+import 'package:artepuebla/museum_screen.dart';
 import 'Favoritos.dart';
 import 'Home.dart';
 
@@ -13,7 +13,7 @@ class TallerScreen extends StatelessWidget {
       title: "Arte Puebla",
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Talleres"),
+          title: const Text("Talleres"),
         ),
         drawer: MenuLateral(),
         body: Column(
@@ -21,8 +21,8 @@ class TallerScreen extends StatelessWidget {
           children: [
             // Encabezado
             Container(
-              margin: EdgeInsets.all(2.0),
-              padding: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(2.0),
+              padding: const EdgeInsets.all(10.0),
               height: 200,
               decoration: BoxDecoration(
                 image: const DecorationImage(
@@ -131,8 +131,8 @@ class TallerScreen extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            margin: EdgeInsets.all(2.0),
-            padding: EdgeInsets.all(10.0),
+            margin: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(10.0),
             width: 100,
             height: 100,
             decoration: BoxDecoration(
@@ -170,6 +170,8 @@ class TallerScreen extends StatelessWidget {
 }
 
 class MenuLateral extends StatelessWidget {
+  const MenuLateral({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -202,7 +204,7 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => MuseumScreen()),
+                MaterialPageRoute(builder: (BuildContext) => const MuseumScreen()),
               );
             },
           ),

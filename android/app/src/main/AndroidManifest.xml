@@ -1,8 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+   <!-- Permiso de Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
-        android:label="flutter_application_1"
+        android:label="Arte Puebla"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"> <!-- Permitir tráfico HTTP inseguro -->
+
         <!-- android:roundIcon="@mipmap/ic_launcher_round"> -->
         <activity
             android:name=".MainActivity"

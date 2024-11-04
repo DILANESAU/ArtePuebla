@@ -2,61 +2,51 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_application_1/museum_screen.dart';
+import 'package:artepuebla/museum_screen.dart';
 import 'Favoritos.dart';
 import 'Taller.dart';
 import 'user_profile_screen.dart';
+import 'ViewModel/museumScreen.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
+  
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   int _currentPage = 0;
   late Timer _timer;
-  List<bool> _isExpanded = [false, false, false]; // Expancion de la tarjeta 
+  final List<bool> _isExpanded = [false, false, false]; // Expancion de la tarjeta 
   List<dynamic> _museums = []; //Lista de informacion API
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(initialPage: 0);
-    _fetchMuseumData(); //Funcion API
+@override
+void initState() {
+  super.initState();
+  _pageController = PageController(initialPage: 0);
 
-    // Temporizador
-    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
-      if (_currentPage < 2) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-      _pageController.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeIn,
-      );
-    });
-  }
+  // Llama a fetchEvents una vez en initState
+  final viewModel = Provider.of<MuseumViewModel>(context, listen: false);
+  viewModel.fetchEvents();
 
-    Future<void> _fetchMuseumData() async {
-    final url = Uri.parse(''); // URL del API
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        setState(() {
-          _museums = json.decode(response.body); // Conversion a JSON
-        });
-      } else {
-        print('Error: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error de conexión: $e');
+  // Temporizador
+  _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+    if (_currentPage < 2) {
+      _currentPage++;
+    } else {
+      _currentPage = 0;
     }
-  }
+    _pageController.animateToPage(
+      _currentPage,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeIn,
+    );
+  });
+}
 
   @override
   void dispose() {
@@ -67,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+      final viewModel = Provider.of<MuseumViewModel>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Arte Puebla",
@@ -79,8 +72,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        drawer: MenuLateral(),
-        body: Column(
+        drawer: const MenuLateral(),
+        body: viewModel.isLoading ?
+        const Center(child: CircularProgressIndicator(),) :
+         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Stack(
@@ -137,25 +132,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           const SizedBox(height: 16),
-           Expanded(
-            child: _museums.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: _museums.length,
-                    itemBuilder: (context, index) {
-                      final museum = _museums[index];
-                      return _buildMuseumCard(
-                        context,
-                        index,
-                        museum['title'],
-                        museum['description'],
-                        museum['price'].toString(),
-                        museum['image_url'],
-                        museum['extended_description'],
-                      );
-                    },
-                  ),
+          Expanded(
+            child: viewModel.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : viewModel.events.isEmpty
+                ? const Center(child: Text('No se pudieron cargar los eventos. Intente más tarde.'))
+                :ListView.builder(
+              itemCount: viewModel.events.length,
+              itemBuilder: (context, index) {
+                final event = viewModel.events[index];
+                return _buildMuseumCard(
+                  context,
+                  index,
+                  event.nameEvent,
+                  event.address,
+                  event.cost.toString(),
+                  //'https://your-image-url.com/museum.jpg', Cambiaremos y corregiremos por la img
+                  event.description 
+                );
+              },
             ),
+),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -208,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMuseumCard(BuildContext context, int index, String title,
-      String description, String price, String imageUrl, String extendedDescription) {
+      String description, String price, String extendedDescription) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -228,10 +225,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      image: DecorationImage(
+                      /*image: DecorationImage(
                         image: AssetImage(imageUrl),
                         fit: BoxFit.cover,
-                      ),
+                      ),*/
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
@@ -245,9 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'MyCustomFont'),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 2),
                         Text('\$$price',
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'MyCustomFont',)),
@@ -273,6 +270,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class MenuLateral extends StatelessWidget {
+  const MenuLateral({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -305,7 +304,7 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => MuseumScreen()),
+                MaterialPageRoute(builder: (BuildContext) => const MuseumScreen()),
               );
             },
           ),
