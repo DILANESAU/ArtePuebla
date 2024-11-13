@@ -1,52 +1,63 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Galeria.dart';
 import 'package:http/http.dart' as http;
-import 'package:artepuebla/museum_screen.dart';
+import 'package:flutter_application_1/museum_screen.dart';
 import 'Favoritos.dart';
 import 'Taller.dart';
 import 'user_profile_screen.dart';
-import 'ViewModel/museumScreen.dart';
-import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
-  
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
-  int _currentPage = 0;
+  int _currentPage = 1;
   late Timer _timer;
-  final List<bool> _isExpanded = [false, false, false]; // Expancion de la tarjeta 
+  List<bool> _isExpanded = [false, false, false]; // Expancion de la tarjeta
   List<dynamic> _museums = []; //Lista de informacion API
 
-@override
-void initState() {
-  super.initState();
-  _pageController = PageController(initialPage: 0);
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 1);
+    _fetchMuseumData(); //Funcion API
 
-  // Llama a fetchEvents una vez en initState
-  final viewModel = Provider.of<MuseumViewModel>(context, listen: false);
-  viewModel.fetchEvents();
+    // Temporizador
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+      if (_currentPage < 2) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
+    });
+  }
 
-  // Temporizador
-  _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
-    if (_currentPage < 2) {
-      _currentPage++;
-    } else {
-      _currentPage = 0;
+  Future<void> _fetchMuseumData() async {
+    final url = Uri.parse(''); // URL del API
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        setState(() {
+          _museums = json.decode(response.body); // Conversion a JSON
+        });
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error de conexión: $e');
     }
-    _pageController.animateToPage(
-      _currentPage,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeIn,
-    );
-  });
-}
+  }
 
   @override
   void dispose() {
@@ -57,9 +68,6 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-
-      final viewModel = Provider.of<MuseumViewModel>(context);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Arte Puebla",
@@ -72,11 +80,9 @@ void initState() {
             ),
           ),
         ),
-        drawer: const MenuLateral(),
-        body: viewModel.isLoading ?
-        const Center(child: CircularProgressIndicator(),) :
-         Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        drawer: MenuLateral(),
+        body: ListView(
+          // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Stack(
               alignment: Alignment.center,
@@ -90,9 +96,12 @@ void initState() {
                       _currentPage = index;
                     },
                     children: [
-                      _buildImageCarousel('assets/images/Museo_Amparo_Puebla.jpg'),
-                      _buildImageCarousel('assets/images/Museo_Evolucion_Puebla.jpg'),
-                      _buildImageCarousel('assets/images/Museo_Ferrocarril_Puebla.jpg'),
+                      _buildImageCarousel(
+                          'assets/images/Museo_Amparo_Puebla.jpg'),
+                      _buildImageCarousel(
+                          'assets/images/Museo_Evolucion_Puebla.jpg'),
+                      _buildImageCarousel(
+                          'assets/images/Museo_Ferrocarril_Puebla.jpg'),
                     ],
                   ),
                 ),
@@ -131,28 +140,26 @@ void initState() {
                 ),
               ),
             ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: viewModel.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : viewModel.events.isEmpty
-                ? const Center(child: Text('No se pudieron cargar los eventos. Intente más tarde.'))
-                :ListView.builder(
-              itemCount: viewModel.events.length,
-              itemBuilder: (context, index) {
-                final event = viewModel.events[index];
-                return _buildMuseumCard(
-                  context,
-                  index,
-                  event.nameEvent,
-                  event.address,
-                  event.cost.toString(),
-                  //'https://your-image-url.com/museum.jpg', Cambiaremos y corregiremos por la img
-                  event.description 
-                );
-              },
+            const SizedBox(height: 16),
+            Expanded(
+              child: _museums.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: _museums.length,
+                      itemBuilder: (context, index) {
+                        final museum = _museums[index];
+                        return _buildMuseumCard(
+                          context,
+                          index,
+                          museum['title'],
+                          museum['description'],
+                          museum['price'].toString(),
+                          museum['image_url'],
+                          museum['extended_description'],
+                        );
+                      },
+                    ),
             ),
-),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -177,7 +184,19 @@ void initState() {
             if (index == 2) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const UserProfileScreen()),
+              );
+            } else if (index == 0) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const FavoritosScreen()),
+              );
+            } else if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             } else {
               setState(() {
@@ -204,8 +223,14 @@ void initState() {
     );
   }
 
-  Widget _buildMuseumCard(BuildContext context, int index, String title,
-      String description, String price, String extendedDescription) {
+  Widget _buildMuseumCard(
+      BuildContext context,
+      int index,
+      String title,
+      String description,
+      String price,
+      String imageUrl,
+      String extendedDescription) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -225,10 +250,10 @@ void initState() {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      /*image: DecorationImage(
+                      image: DecorationImage(
                         image: AssetImage(imageUrl),
                         fit: BoxFit.cover,
-                      ),*/
+                      ),
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
@@ -240,14 +265,20 @@ void initState() {
                         Text(
                           title,
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'MyCustomFont'),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'MyCustomFont'),
                         ),
-                        const SizedBox(height: 2),
-                        Text(description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
+                        Text(description,
+                            maxLines: 2, overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 8),
                         Text('\$$price',
                             style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'MyCustomFont',)),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'MyCustomFont',
+                            )),
                       ],
                     ),
                   ),
@@ -270,8 +301,6 @@ void initState() {
 }
 
 class MenuLateral extends StatelessWidget {
-  const MenuLateral({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -282,7 +311,8 @@ class MenuLateral extends StatelessWidget {
             child: const ListTile(
               title: Text(
                 "Arte Puebla",
-                style: TextStyle(color: Colors.white, fontFamily: 'MyCustomFont'),
+                style:
+                    TextStyle(color: Colors.white, fontFamily: 'MyCustomFont'),
               ),
             ),
           ),
@@ -293,7 +323,8 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => const HomeScreen()),
+                MaterialPageRoute(
+                    builder: (BuildContext) => const HomeScreen()),
               );
             },
           ),
@@ -304,7 +335,7 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => const MuseumScreen()),
+                MaterialPageRoute(builder: (BuildContext) => MuseumScreen()),
               );
             },
           ),
@@ -315,7 +346,8 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => const FavoritosScreen()),
+                MaterialPageRoute(
+                    builder: (BuildContext) => const FavoritosScreen()),
               );
             },
           ),
@@ -326,7 +358,20 @@ class MenuLateral extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (BuildContext) => const TallerScreen()),
+                MaterialPageRoute(
+                    builder: (BuildContext) => const TallerScreen()),
+              );
+            },
+          ),
+           _buildMenuButton(
+            context,
+            icon: Icons.palette,
+            label: "Galería",
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (BuildContext) => const GaleriaScreen()),
               );
             },
           ),
@@ -336,7 +381,9 @@ class MenuLateral extends StatelessWidget {
   }
 
   Widget _buildMenuButton(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onTap}) {
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 16.0),
       child: ElevatedButton.icon(

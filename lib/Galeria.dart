@@ -1,19 +1,21 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Galeria.dart';
-import 'package:flutter_application_1/Home.dart';
-import 'package:flutter_application_1/museum_screen.dart';
-import 'Taller.dart';
-import 'user_profile_screen.dart';
 
-class FavoritosScreen extends StatefulWidget {
-  const FavoritosScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Form.dart';
+import 'package:flutter_application_1/Taller.dart';
+import 'package:flutter_application_1/museum_screen.dart';
+import 'package:flutter_application_1/user_profile_screen.dart';
+import 'Favoritos.dart';
+import 'Home.dart';
+
+class GaleriaScreen extends StatefulWidget {
+  const GaleriaScreen({super.key});
 
   @override
-  _FavoritosScreenState createState() => _FavoritosScreenState();
+  _GaleriaScreenState createState() => _GaleriaScreenState();
 }
 
-class _FavoritosScreenState extends State<FavoritosScreen> {
+class _GaleriaScreenState extends State<GaleriaScreen> {
   late PageController _pageController;
   int _currentPage = 0;
   late Timer _timer;
@@ -101,6 +103,43 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            // Positioned(
+            //   bottom: 16.0,
+            //   right: 50.0,
+            //   child: FloatingActionButton(
+            //     onPressed: () {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(builder: (context) => const FormScreen()),
+            //       );
+            //     },
+            //     child: const Icon(Icons.add,size: 24,),
+            //     backgroundColor: Colors.deepPurple,
+            //     tooltip:'Agregar Galería',
+
+            //   ),
+            // ),
+            Align(
+              alignment: Alignment
+                  .bottomRight, // Alinea el botón a la esquina inferior derecha
+              child: Container(
+                margin: EdgeInsets.all(
+                    16.0), // Añade un margen de 16 píxeles en todos los lados
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FormScreen()),
+                    );
+                  },
+                  child: const Icon(Icons.add, size: 24),
+                  backgroundColor: Colors.deepPurple,
+                  tooltip: 'Agregar Galería',
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -355,7 +394,7 @@ class MenuLateral extends StatelessWidget {
               );
             },
           ),
-           _buildMenuButton(
+          _buildMenuButton(
             context,
             icon: Icons.palette,
             label: "Galería",
