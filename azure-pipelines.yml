@@ -1,0 +1,53 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  displayName: 'Build Flutter App'
+  jobs:
+  - job: FlutterBuild
+    displayName: 'Build Flutter Application'
+    steps:
+    - task: UseFlutter@0
+      inputs:
+        version: 'stable'
+    - script: |
+        flutter pub get
+        flutter build apk --release
+      displayName: 'Build APK'
+    - publish: 'build/app/outputs/flutter-apk/app-release.apk'
+      artifact: 'FlutterAPK'
+
+- stage: Test
+  displayName: 'Run API Tests'
+  jobs:
+  - job: TestAPI
+    displayName: 'API Unit Tests'
+    steps:
+    - script: dotnet test --configuration $(buildConfiguration)
+      displayName: 'Run C# Tests'
+
+- stage: Deploy
+  displayName: 'Deploy API to Production'
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - deployment: DeployAPI
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: az webapp deploy --resource-group MyResourceGroup --name MyAppName --src-path $(Pipeline.Workspace)/drop
+            displayName: 'Deploy API to Azure'
