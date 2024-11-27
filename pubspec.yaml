@@ -1,42 +1,43 @@
-name: flutter_application_1
-description: A new Flutter project.
+name: artepuebla
+description: "Un proyecto ambientado en los museos ."
+publish_to: 'none' # Para evitar publicaiones accidentales en pub.dev
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+# Configuracion de la version
 version: 1.0.0+1
 
+#Ambiente necesario
 environment:
   sdk: ^3.5.3
 
+#Dependencias principales
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   flutter_svg: ^1.1.6 # Añadido para soporte SVG
-  http: ^1.2.2
+  http: ^1.2.2 #Para manejar solicitudes HTTP
+  cupertino_icons: ^1.0.8 #Iconos estilo iOS
+  intl: ^0.18.0
+  provider: ^6.0.0
+  firebase_core: ^2.16.0
+  firebase_auth: ^4.8.0
+  google_sign_in: ^6.2.2
 
+
+#Dependencias para desarrollo
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^4.0.0 #Buenas practicas y recomendaciones de codificacion
+  
 
-flutter: 
+#Dependencia para el icono
+flutter_icons:
+  android: true 
+  ios: true
+  image_path: "resources/assets/app_icon.png" #Ruta del icono principal
+  adaptive_icon_background: "#ffffff" #Fondo blanco
+
+flutter:
   uses-material-design: true
-  assets:
-    - assets/images/museo1.jpg
-    - assets/images/museo2.jpg
-    - assets/images/museo3.jpg
-    - assets/images/fachadamuseoevo.jpg
-    - assets/images/fachadamuseoamapa.jpg
-    - assets/images/fachadamuseoferro.jpg
-    - assets/images/Museo_Ferrocarril_Puebla.jpg
-    - assets/images/Museo_Amparo_Puebla.jpg
-    - assets/images/Museo_Evolucion_Puebla.jpg
-    - assets/images/google_color_icon.svg
-
-  fonts:
-    - family: MyCustomFont
-      fonts:
-        - asset: assets/fonts/Ubahn.ttf
-        # - asset: assets/fonts/Smooth.ttf
-          weight: 700
-
+  #Archivos de recursos (assets)
+  #assets:
